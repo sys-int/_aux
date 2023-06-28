@@ -58,4 +58,4 @@ jobs:
           helm registry login $HELM_REGISTRY -u $HELM_USER --password $HELM_PASS
           helm lint ./helm
           helm package ./helm --app-version $VERSION --version $VERSION
-          helm push ${REP}-${VERSION}.tgz oci://${HELM_REGISTRY}/${GITHUB_REPOSITORY_OWNER}
+          helm push ${REP}-chart-${VERSION}.tgz oci://${HELM_REGISTRY}/${GITHUB_REPOSITORY_OWNER}
