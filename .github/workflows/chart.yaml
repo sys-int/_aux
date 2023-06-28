@@ -6,12 +6,6 @@ on:
       version:
         required: true
         type: string
-      project:
-        required: true
-        type: string
-      service:
-        required: true
-        type: string
     secrets:
       VAULT_ADDR:
         required: true
