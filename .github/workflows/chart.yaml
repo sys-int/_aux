@@ -6,6 +6,12 @@ on:
       version:
         required: true
         type: string
+      project:
+        required: true
+        type: string
+      service:
+        required: true
+        type: string
     secrets:
       VAULT_ADDR:
         required: true
@@ -27,9 +33,27 @@ jobs:
               kv/data/ci/github/workflows HELM_REGISTRY | HELM_REGISTRY ;
               kv/data/ci/github/workflows HELM_USER | HELM_USER ;
               kv/data/ci/github/workflows HELM_PASS | HELM_PASS ;
+              kv/data/ci/github/workflows PYPI_SERVER | PYPI_SERVER ;
+              kv/data/ci/github/workflows PYPI_USER | PYPI_USER ;
+              kv/data/ci/github/workflows PYPI_PASS | PYPI_PASS ;
+              kv/data/ci/github/workflows PYPI_REGISTRY | PYPI_REGISTRY ;
 
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: Install deployment
+        shell: bash
+        run: |
+          export PATH=$HOME/.local/bin:$PATH
+          printf "%s\n" "machine ${PYPI_SERVER}" "login ${PYPI_USER}" "password ${PYPI_PASS}" > ~/.netrc
+          pip install --upgrade -i $PYPI_REGISTRY deployment
+
+      - name: Create helm chart
+        shell: bash
+        env: 
+          VERSION: ${{ inputs.version }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        run: |
+          SERVICE=${GITHUB_REPOSITORY#*/}
+          PROJECT=${GITHUB_REPOSITORY_OWNER}
+          deployment helm $PROJECT $SERVICE $VERSION ./helm
 
       - name: helm
         shell: bash
@@ -37,7 +61,7 @@ jobs:
           VERSION: ${{ inputs.version }}
         run: |
           REP=${GITHUB_REPOSITORY#*/}
-          env
           helm registry login $HELM_REGISTRY -u $HELM_USER --password $HELM_PASS
+          helm lint ./helm
           helm package ./helm --app-version $VERSION --version $VERSION
           helm push ${REP}-${VERSION}.tgz oci://${HELM_REGISTRY}/${GITHUB_REPOSITORY_OWNER}
