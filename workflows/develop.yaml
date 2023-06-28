@@ -44,6 +44,8 @@ jobs:
     uses: "sys-int/_aux/.github/workflows/build.yaml@main"
     with:
       VERSION: ${{needs.build.outputs.VERSION}}
+      PROJECT: ${{ needs.build.outputs.PROJECT }}
+      SERVICE: ${{ needs.build.outputs.SERVICE }}
     secrets:
       VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
       TOKEN: ${{ secrets.TOKEN }}
