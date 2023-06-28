@@ -1,0 +1,80 @@
+name: ci
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Import Secrets
+        id: secrets
+        uses: hashicorp/vault-action@v2
+        with:
+          url: ${{ secrets.VAULT_ADDR }}
+          method: github
+          githubToken: ${{ secrets.TOKEN }}
+          secrets: |
+              kv/data/ci/github/workflows DOCKER_REGISTRY | DOCKER_REGISTRY ;
+              kv/data/ci/github/workflows DOCKER_USER | DOCKER_USER ;
+              kv/data/ci/github/workflows DOCKER_PASS | DOCKER_PASS ;
+
+      - uses: actions/checkout@v3
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.1.0
+        with:
+          cosign-release: 'v2.1.0' # optional
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ${{ format('{0}/{1}', env.DOCKER_REGISTRY, github.repository) }}
+          tags: |
+            type=raw,value=${{ inputs.version }}
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.DOCKER_REGISTRY }}
+          username: ${{ env.DOCKER_USER }}
+          password: ${{ env.DOCKER_PASS }}
+
+      - name: Build and push
+        id: build-and-push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Get HV Token
+        id: get-token
+        env:
+          TOKEN: ${{ secrets.TOKEN }}
+          VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+        run: |
+          export vault_token=$(curl -s --request POST -d '{"token":"'"${TOKEN}"'"}' ${VAULT_ADDR}/v1/auth/github/login | jq -r '.auth.client_token')
+          echo "VAULT_TOKEN=$vault_token" >> $GITHUB_OUTPUT
+        
+      - name: Sign Image
+        run: |
+          cosign sign --yes --key hashivault://cosign "${TAGS}@${DIGEST}"
+        env:
+          TAGS: ${{ steps.meta.outputs.tags }}
+          VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+          VAULT_TOKEN: ${{ steps.get-token.outputs.VAULT_TOKEN }}
+          DIGEST: ${{ steps.build-and-push.outputs.digest }}

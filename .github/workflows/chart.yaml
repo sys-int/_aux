@@ -1,0 +1,38 @@
+name: ci
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Import Secrets
+        id: secrets
+        uses: hashicorp/vault-action@v2
+        with:
+          url: ${{ secrets.VAULT_ADDR }}
+          method: github
+          githubToken: ${{ secrets.TOKEN }}
+          secrets: |
+              kv/data/ci/github/workflows HELM_REGISTRY | HELM_REGISTRY ;
+              kv/data/ci/github/workflows HELM_USER | HELM_USER ;
+              kv/data/ci/github/workflows HELM_PASS | HELM_PASS ;
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: helm
+        shell: bash
+        env: 
+          VERSION: ${{ inputs.version }}
+        run: |
+          REP=${GITHUB_REPOSITORY#*/}
+          env
+          helm registry login $HELM_REGISTRY -u $HELM_USER --password $HELM_PASS
+          helm package ./helm --app-version $VERSION --version $VERSION
+          helm push ${REP}-${VERSION}.tgz oci://${HELM_REGISTRY}/${GITHUB_REPOSITORY_OWNER}

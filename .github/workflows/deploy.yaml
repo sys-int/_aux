@@ -1,0 +1,41 @@
+name: ci
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+      stage:
+        required: true
+        type: string
+      
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:      
+      - name: Import Secrets
+        id: secrets
+        uses: hashicorp/vault-action@v2
+        with:
+          url: ${{ secrets.VAULT_ADDR }}
+          method: github
+          githubToken: ${{ secrets.TOKEN }}
+          secrets: |
+              kv/data/ci/github/workflows PYPI_REGISTRY | PYPI_REGISTRY ;
+              kv/data/ci/github/workflows PYPI_USER | PYPI_USER ;
+              kv/data/ci/github/workflows PYPI_PASS | PYPI_PASS ;
+              kv/data/ci/github/workflows PYPI_SERVER | PYPI_SERVER ;
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: deploy
+        shell: bash
+        env: 
+          VERSION: ${{ inputs.version }}
+        run: |
+          export PATH=$HOME/.local/bin:$PATH
+          printf "%s\n" "machine ${PYPI_SERVER}" "login ${PYPI_USER}" "password ${PYPI_PASS}" > ~/.netrc
+          pip install --upgrade -i $PYPI_REGISTRY deployment
+          
