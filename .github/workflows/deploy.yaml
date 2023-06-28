@@ -9,6 +9,11 @@ on:
       stage:
         required: true
         type: string
+    secrets:
+      VAULT_ADDR:
+        required: true
+      TOKEN:
+        required: true
       
 
 jobs:
