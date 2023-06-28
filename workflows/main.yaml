@@ -1,0 +1,80 @@
+name: main
+
+on:
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      STAGE: "prod"
+      VERSION: ${{ steps.version.outputs.version }}
+      PROJECT: ${{ steps.project.outputs.PROJECT }}
+      SERVICE: ${{ steps.service.outputs.SERVICE }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Application Version
+        id: version
+        uses: paulhatch/semantic-version@v5.0.2
+        with:
+          major_pattern: "(MAJOR)"
+          minor_pattern: "(MINOR)"
+          version_format: "${major}.${minor}.${patch}"
+      
+      - name: define project
+        id: project
+        shell: bash
+        run: |
+          PROJECT=${GITHUB_REPOSITORY_OWNER}
+          echo "PROJECT=$PROJECT" >> $GITHUB_OUTPUT
+
+      - name: define service
+        id: service
+        shell: bash
+        run: |
+          SERVICE=${GITHUB_REPOSITORY#*/}
+          echo "SERVICE=$SERVICE" >> $GITHUB_OUTPUT
+
+  build-image:
+    needs:
+      - build
+    uses: "sys-int/_aux/.github/workflows/build.yaml@main"
+    with:
+      VERSION: ${{needs.build.outputs.VERSION}}
+    secrets:
+      VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+      TOKEN: ${{ secrets.TOKEN }}
+
+
+  create-helm:
+    needs:
+      - build
+    uses: "sys-int/_aux/.github/workflows/chart.yaml@main"
+    with:
+      VERSION: ${{needs.build.outputs.VERSION}}
+      PROJECT: ${{ needs.build.outputs.PROJECT }}
+      SERVICE: ${{ needs.build.outputs.SERVICE }}
+    secrets:
+      VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+      TOKEN: ${{ secrets.TOKEN }}
+
+  deploy:
+    needs:
+      - build
+      - create-helm
+      - build-image
+    uses: "sys-int/_aux/.github/workflows/deploy.yaml@main"
+    with:
+      VERSION: ${{ needs.build.outputs.VERSION }}
+      STAGE: ${{ needs.build.outputs.STAGE }}
+      PROJECT: ${{ needs.build.outputs.PROJECT }}
+      SERVICE: ${{ needs.build.outputs.SERVICE }}
+    secrets:
+      VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+      TOKEN: ${{ secrets.TOKEN }}
+

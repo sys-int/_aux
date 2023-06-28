@@ -3,7 +3,13 @@ name: ci
 on:
   workflow_call:
     inputs:
-      version:
+      VERSION:
+        required: true
+        type: string
+      PROJECT:
+        required: true
+        type: string
+      SERVICE:
         required: true
         type: string
     secrets:
@@ -42,8 +48,9 @@ jobs:
       - name: Create helm chart
         shell: bash
         env: 
-          VERSION: ${{ inputs.version }}
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          VERSION: ${{ inputs.VERSION }}
+          PROJECT: ${{ inputs.PROJECT }}
+          SERVICE: ${{ inputs.SERVICE }}
         run: |
           SERVICE=${GITHUB_REPOSITORY#*/}
           PROJECT=${GITHUB_REPOSITORY_OWNER}
@@ -52,10 +59,10 @@ jobs:
       - name: helm
         shell: bash
         env: 
-          VERSION: ${{ inputs.version }}
+          VERSION: ${{ inputs.VERSION }}
+          PROJECT: ${{ inputs.PROJECT }}
+          SERVICE: ${{ inputs.SERVICE }}
         run: |
-          SERVICE=${GITHUB_REPOSITORY#*/}
-          PROJECT=${GITHUB_REPOSITORY_OWNER}
           helm registry login $HELM_REGISTRY -u $HELM_USER --password $HELM_PASS
           helm lint ./helm
           helm package ./helm --app-version $VERSION --version $VERSION

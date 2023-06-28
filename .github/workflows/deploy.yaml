@@ -3,10 +3,16 @@ name: ci
 on:
   workflow_call:
     inputs:
-      version:
+      VERSION:
         required: true
         type: string
-      stage:
+      STAGE:
+        required: true
+        type: string
+      PROJECT:
+        required: true
+        type: string
+      SERVICE:
         required: true
         type: string
     secrets:
@@ -35,12 +41,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: deploy
+      - name: install deployment
         shell: bash
         env: 
-          VERSION: ${{ inputs.version }}
+          VERSION: ${{ inputs.VERSION }}
         run: |
           export PATH=$HOME/.local/bin:$PATH
           printf "%s\n" "machine ${PYPI_SERVER}" "login ${PYPI_USER}" "password ${PYPI_PASS}" > ~/.netrc
           pip install --upgrade -i $PYPI_REGISTRY deployment
           
+
+      - name: install deployment
+        shell: bash
+        env: 
+          VERSION: ${{ inputs.VERSION }}
+          STAGE: ${{ inputs.STAGE }}
+          PROJECT: ${{ inputs.PROJECT }}
+          SERVICE: ${{ inputs.SERVICE }}
+        run: |
+          deployment deploy $STAGE $PROJECT $SERVICE $VERSION

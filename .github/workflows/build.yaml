@@ -3,7 +3,7 @@ name: ci
 on:
   workflow_call:
     inputs:
-      version:
+      VERSION:
         required: true
         type: string
     secrets:
@@ -48,7 +48,7 @@ jobs:
           images: |
             ${{ format('{0}/{1}', env.DOCKER_REGISTRY, github.repository) }}
           tags: |
-            type=raw,value=${{ inputs.version }}
+            type=raw,value=${{ inputs.VERSION }}
 
       - name: Login to Docker Hub
         uses: docker/login-action@v2
