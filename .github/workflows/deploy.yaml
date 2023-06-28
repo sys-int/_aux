@@ -58,5 +58,6 @@ jobs:
           STAGE: ${{ inputs.STAGE }}
           PROJECT: ${{ inputs.PROJECT }}
           SERVICE: ${{ inputs.SERVICE }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
         run: |
           deployment deploy $STAGE $PROJECT $SERVICE $VERSION
