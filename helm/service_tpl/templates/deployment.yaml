@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "SERVICE_TPL.fullname" . }}
+  name: {{ include "TPL_SERVICE.fullname" . }}
   labels:
-    {{- include "SERVICE_TPL.labels" . | nindent 4 }}
+    {{- include "TPL_SERVICE.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "SERVICE_TPL.selectorLabels" . | nindent 6 }}
+      {{- include "TPL_SERVICE.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,13 +18,13 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "SERVICE_TPL.selectorLabels" . | nindent 8 }}
+        {{- include "TPL_SERVICE.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "SERVICE_TPL.serviceAccountName" . }}
+      serviceAccountName: {{ include "TPL_SERVICE.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
