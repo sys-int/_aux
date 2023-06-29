@@ -24,7 +24,7 @@ jobs:
         with:
           major_pattern: "(MAJOR)"
           minor_pattern: "(MINOR)"
-          version_format: "${major}.${minor}.${patch}-dev${increment}"
+          version_format: "${major}.${minor}.${patch}-dev-${increment}"
       
       - name: define project
         id: project
