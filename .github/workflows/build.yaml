@@ -53,7 +53,7 @@ jobs:
           repository: "${{ github.event.repository.name }}"
           login: "${{ env.DOCKER_USER }}"
           password: "${{ env.DOCKER_PASS }}"
-          tag: latest
+          tag: ${{ env.SHORT_SHA }}
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3.1.0
