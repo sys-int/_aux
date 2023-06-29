@@ -115,6 +115,7 @@ jobs:
       - name: Sign Image
         if: ${{ steps.image_exists.outputs.conclusion == false  }}
         run: |
+          cosign login ${DOCKER_REGISTRY} -u ${DOCKER_USER} -p ${DOCKER_PASS}
           cosign sign --yes --key hashivault://cosign "${TAGS}"
         env:
           TAGS: ${{ format('{0}/{1}:', env.DOCKER_REGISTRY, github.repository, env.SHORT_SHA) }}
