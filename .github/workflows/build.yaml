@@ -45,7 +45,7 @@ jobs:
         continue-on-error: true
         uses: cloudposse/github-action-docker-image-exists@main
         with:
-          registry: ${{ env. DOCKER_REGISTRY }}
+          registry: ${{ env.DOCKER_REGISTRY }}
           organization: "${{ github.repository_owner }}"
           repository: "${{ github.event.repository.name }}"
           login: "${{ env.DOCKER_USER }}"
