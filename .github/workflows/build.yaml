@@ -91,12 +91,13 @@ jobs:
           password: ${{ env.DOCKER_PASS }}
 
 
-      - name: Buildah Action
+      - name: Build Image
         if: ${{ steps.image_exists.outputs.conclusion == false  }}
         id: build-image
         uses: redhat-actions/buildah-build@v2
         with:
-          image: ${{ format('{0}/{1}', env.DOCKER_REGISTRY, github.repository) }}
+          # image: ${{ format('{0}/{1}', env.DOCKER_REGISTRY, github.repository) }}
+          image: ${{ github.repository }}
           tags: ${{ inputs.VERSION }} ${{ env.SHORT_SHA }}
           containerfiles: |
             ./Dockerfile
@@ -107,7 +108,7 @@ jobs:
         with:
           image: ${{ steps.build-image.outputs.image }}
           tags: ${{ steps.build-image.outputs.tags }}
-          # registry: ${{ env.DOCKER_REGISTRY }}
+          registry: ${{ env.DOCKER_REGISTRY }}
           # username: ${{ env.DOCKER_USER }}
           # password: ${{ env.DOCKER_PASS }}
 
