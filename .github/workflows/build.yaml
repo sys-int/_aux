@@ -154,12 +154,12 @@ jobs:
           export vault_token=$(curl -s --request POST -d '{"token":"'"${TOKEN}"'"}' ${VAULT_ADDR}/v1/auth/github/login | jq -r '.auth.client_token')
           echo "VAULT_TOKEN=$vault_token" >> $GITHUB_OUTPUT
         
-      # - name: Sign Image
-      #   if: ${{ steps.image_exists.outputs.conclusion }}
-      #   run: |
-      #     cosign sign --yes --key hashivault://cosign "${TAGS}@${DIGEST}"
-      #   env:
-      #     TAGS: ${{ steps.meta.outputs.tags }}
-      #     VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
-      #     VAULT_TOKEN: ${{ steps.get-token.outputs.VAULT_TOKEN }}
-      #     DIGEST: ${{ steps.build-and-push.outputs.digest }}
+      - name: Sign Image
+        if: ${{ steps.image_exists.outputs.conclusion }}
+        run: |
+          cosign sign --yes --key hashivault://cosign "${TAGS}@${DIGEST}"
+        env:
+          TAGS: ${{ format('{0}/{1}:', env.DOCKER_REGISTRY, github.repository, env.SHORT_SHA) }}
+          VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+          VAULT_TOKEN: ${{ steps.get-token.outputs.VAULT_TOKEN }}
+          DIGEST: ${{ steps.build-and-push.outputs.digest }}
