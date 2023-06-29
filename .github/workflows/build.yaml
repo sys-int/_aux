@@ -102,19 +102,6 @@ jobs:
           docker tag ${IMAGE}:${SHORT_SHA} ${IMAGE}:${VERSION}
           docker push
 
-      - name: Tag and Push
-        if: ${{ steps.image_exists.outputs.conclusion == false  }}
-        id: tag-and-push
-        env: 
-          VERSION: ${{ inputs.VERSION }}
-          TAG: ${{ steps.meta.outputs.tags }}
-          IMAGE: ${{ format('{0}/{1}', env.DOCKER_REGISTRY, github.repository) }}
-          DIGEST: ${{ steps.build-and-push.outputs.digest }}
-        shell: bash
-        run: |
-          docker tag ${TAG}@${DIGEST} ${IMAGE}:${GITHUB_SHA::7}
-          docker push
-
       - name: Get HV Token
         if: ${{ steps.image_exists.outputs.conclusion == false  }}
         id: get-token
