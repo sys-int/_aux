@@ -107,9 +107,9 @@ jobs:
         with:
           image: ${{ steps.build-image.outputs.image }}
           tags: ${{ steps.build-image.outputs.tags }}
-          registry: ${{ env.DOCKER_REGISTRY }}
-          username: ${{ env.DOCKER_USER }}
-          password: ${{ env.DOCKER_PASS }}
+          # registry: ${{ env.DOCKER_REGISTRY }}
+          # username: ${{ env.DOCKER_USER }}
+          # password: ${{ env.DOCKER_PASS }}
 
       # - name: Build and push
       #   if: ${{ steps.image_exists.outputs.conclusion == false  }}
