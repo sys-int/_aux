@@ -46,7 +46,7 @@ jobs:
         uses: cloudposse/github-action-docker-image-exists@main
         with:
           registry: ${{ env. DOCKER_REGISTRY }}
-          organization: "${{ github.repository }}"
+          organization: "${{ github.event.repository.name }}"
           repository: "${{ github.event.repository.name }}"
           login: "${{ env.DOCKER_USER }}"
           password: "${{ env.DOCKER_PASS }}"
