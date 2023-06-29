@@ -97,7 +97,7 @@ jobs:
         uses: redhat-actions/buildah-build@v2
         with:
           image: ${{ format('{0}/{1}', env.DOCKER_REGISTRY, github.repository) }}
-          tags: ${{ inputs.VERSION }} §{{ env.SHORT_SHA }}
+          tags: ${{ inputs.VERSION }} ${{ env.SHORT_SHA }}
           containerfiles: |
             ./Dockerfile
 
