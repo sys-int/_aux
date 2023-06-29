@@ -40,6 +40,9 @@ jobs:
 
       - uses: actions/checkout@v3
 
+      - name: ShortSHA
+        run: echo "SHORT_SHA=`echo ${GITHUB_SHA::7}" >> $GITHUB_ENV
+
       - name: Check image
         id: image_exists
         continue-on-error: true
@@ -94,7 +97,7 @@ jobs:
         uses: redhat-actions/buildah-build@v2
         with:
           image: ${{ format('{0}/{1}', env.DOCKER_REGISTRY, github.repository) }}
-          tags: ${{ inputs.VERSION }} 
+          tags: ${{ inputs.VERSION }} §{{ env.SHORT_SHA }}
           containerfiles: |
             ./Dockerfile
 
@@ -124,8 +127,8 @@ jobs:
         env: 
           VERSION: ${{ inputs.VERSION }}
         run: |
-          docker pull ${IMAGE}:${GITHUB_SHA::7}
-          docker tag ${IMAGE}:${GITHUB_SHA::7} ${IMAGE}:${VERSION}
+          docker pull ${IMAGE}:${SHORT_SHA}
+          docker tag ${IMAGE}:${SHORT_SHA} ${IMAGE}:${VERSION}
           docker push
 
       - name: Tag and Push
