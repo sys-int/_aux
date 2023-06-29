@@ -115,9 +115,8 @@ jobs:
       - name: Sign Image
         if: ${{ steps.image_exists.outputs.conclusion == false  }}
         run: |
-          cosign sign --yes --key hashivault://cosign "${TAGS}@${DIGEST}"
+          cosign sign --yes --key hashivault://cosign "${TAGS}"
         env:
           TAGS: ${{ format('{0}/{1}:', env.DOCKER_REGISTRY, github.repository, env.SHORT_SHA) }}
           VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
           VAULT_TOKEN: ${{ steps.get-token.outputs.VAULT_TOKEN }}
-          DIGEST: ${{ steps.build-and-push.outputs.digest }}
