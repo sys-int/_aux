@@ -55,26 +55,26 @@ jobs:
           password: "${{ env.DOCKER_PASS }}"
           tag: latest
 
-      - name: Install Cosign
-        uses: sigstore/cosign-installer@v3.1.0
-        with:
-          cosign-release: 'v2.1.0' # optional
+      # - name: Install Cosign
+      #   uses: sigstore/cosign-installer@v3.1.0
+      #   with:
+      #     cosign-release: 'v2.1.0' # optional
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+      # - name: Set up Docker Buildx
+      #   uses: docker/setup-buildx-action@v2
 
-      - name: Docker meta
-        if: ${{ steps.image_exists.outputs.conclusion == false }}
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          images: |
-            ${{ format('{0}/{1}', env.DOCKER_REGISTRY, github.repository) }}
-          tags: |
-            type=raw,value=${{ inputs.VERSION }}
+      # - name: Docker meta
+      #   if: ${{ steps.image_exists.outputs.conclusion == false }}
+      #   id: meta
+      #   uses: docker/metadata-action@v4
+      #   with:
+      #     images: |
+      #       ${{ format('{0}/{1}', env.DOCKER_REGISTRY, github.repository) }}
+      #     tags: |
+      #       type=raw,value=${{ inputs.VERSION }}
 
       # - name: Login to Docker Hub
       #   uses: docker/login-action@v2
@@ -121,28 +121,28 @@ jobs:
       #     tags: ${{ steps.meta.outputs.tags }}
       #     labels: ${{ steps.meta.outputs.labels }}
 
-      - name: Pull image
-        if: ${{ steps.image_exists.outputs.conclusion }}
-        id: pull-image
-        env: 
-          VERSION: ${{ inputs.VERSION }}
-        run: |
-          docker pull ${IMAGE}:${SHORT_SHA}
-          docker tag ${IMAGE}:${SHORT_SHA} ${IMAGE}:${VERSION}
-          docker push
+      # - name: Pull image
+      #   if: ${{ steps.image_exists.outputs.conclusion }}
+      #   id: pull-image
+      #   env: 
+      #     VERSION: ${{ inputs.VERSION }}
+      #   run: |
+      #     docker pull ${IMAGE}:${SHORT_SHA}
+      #     docker tag ${IMAGE}:${SHORT_SHA} ${IMAGE}:${VERSION}
+      #     docker push
 
-      - name: Tag and Push
-        if: ${{ steps.image_exists.outputs.conclusion == false  }}
-        id: tag-and-push
-        env: 
-          VERSION: ${{ inputs.VERSION }}
-          TAG: ${{ steps.meta.outputs.tags }}
-          IMAGE: ${{ format('{0}/{1}', env.DOCKER_REGISTRY, github.repository) }}
-          DIGEST: ${{ steps.build-and-push.outputs.digest }}
-        shell: bash
-        run: |
-          docker tag ${TAG}@${DIGEST} ${IMAGE}:${GITHUB_SHA::7}
-          docker push
+      # - name: Tag and Push
+      #   if: ${{ steps.image_exists.outputs.conclusion == false  }}
+      #   id: tag-and-push
+      #   env: 
+      #     VERSION: ${{ inputs.VERSION }}
+      #     TAG: ${{ steps.meta.outputs.tags }}
+      #     IMAGE: ${{ format('{0}/{1}', env.DOCKER_REGISTRY, github.repository) }}
+      #     DIGEST: ${{ steps.build-and-push.outputs.digest }}
+      #   shell: bash
+      #   run: |
+      #     docker tag ${TAG}@${DIGEST} ${IMAGE}:${GITHUB_SHA::7}
+      #     docker push
 
       - name: Get HV Token
         id: get-token
@@ -153,12 +153,12 @@ jobs:
           export vault_token=$(curl -s --request POST -d '{"token":"'"${TOKEN}"'"}' ${VAULT_ADDR}/v1/auth/github/login | jq -r '.auth.client_token')
           echo "VAULT_TOKEN=$vault_token" >> $GITHUB_OUTPUT
         
-      - name: Sign Image
-        if: ${{ steps.image_exists.outputs.conclusion }}
-        run: |
-          cosign sign --yes --key hashivault://cosign "${TAGS}@${DIGEST}"
-        env:
-          TAGS: ${{ steps.meta.outputs.tags }}
-          VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
-          VAULT_TOKEN: ${{ steps.get-token.outputs.VAULT_TOKEN }}
-          DIGEST: ${{ steps.build-and-push.outputs.digest }}
+      # - name: Sign Image
+      #   if: ${{ steps.image_exists.outputs.conclusion }}
+      #   run: |
+      #     cosign sign --yes --key hashivault://cosign "${TAGS}@${DIGEST}"
+      #   env:
+      #     TAGS: ${{ steps.meta.outputs.tags }}
+      #     VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+      #     VAULT_TOKEN: ${{ steps.get-token.outputs.VAULT_TOKEN }}
+      #     DIGEST: ${{ steps.build-and-push.outputs.digest }}
