@@ -101,7 +101,7 @@ jobs:
           NEW_TAG: ${{ format('{0}/{1}:{2}', env.DOCKER_REGISTRY, github.repository, inputs.VERSION ) }}
         run: |
           docker tag ${OLD_TAG} ${NEW_TAG}
-          docker push
+          docker push ${NEW_TAG}
 
       - name: Get HV Token
         if: ${{ steps.image_exists.outcome != 'success' }}
