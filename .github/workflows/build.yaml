@@ -40,21 +40,6 @@ jobs:
 
       - uses: actions/checkout@v3
 
-      - name: ShortSHA
-        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
-
-      - name: Check image
-        id: image_exists
-        continue-on-error: true
-        uses: cloudposse/github-action-docker-image-exists@main
-        with:
-          registry: ${{ env.DOCKER_REGISTRY }}
-          organization: "${{ github.repository_owner }}"
-          repository: "${{ github.event.repository.name }}"
-          login: "${{ env.DOCKER_USER }}"
-          password: "${{ env.DOCKER_PASS }}"
-          tag: ${{ env.SHORT_SHA }}
-
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3.1.0
         with:
@@ -70,6 +55,20 @@ jobs:
           username: ${{ env.DOCKER_USER }}
           password: ${{ env.DOCKER_PASS }}
 
+      - name: ShortSHA
+        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
+      - name: Check image
+        id: image_exists
+        continue-on-error: true
+        uses: cloudposse/github-action-docker-image-exists@main
+        with:
+          registry: ${{ env.DOCKER_REGISTRY }}
+          organization: "${{ github.repository_owner }}"
+          repository: "${{ github.event.repository.name }}"
+          login: "${{ env.DOCKER_USER }}"
+          password: "${{ env.DOCKER_PASS }}"
+          tag: ${{ env.SHORT_SHA }}
 
       - name: Build Image
         if: ${{ steps.image_exists.outcome != 'success' }}
@@ -93,8 +92,8 @@ jobs:
           # username: ${{ env.DOCKER_USER }}
           # password: ${{ env.DOCKER_PASS }}
 
-      - name: Pull image
-        if: ${{ steps.image_exists.outputs.conclusion }}
+      - name: Re-tag image
+        if: ${{ steps.image_exists.outcome == 'success' }}
         id: pull-image
         env: 
           VERSION: ${{ inputs.VERSION }}
