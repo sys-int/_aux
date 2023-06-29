@@ -1,6 +1,5 @@
-{{- if eq .Values.stage "dev"-}}
-{{- if hasPrefix "www" "TPL_SERVICE"-}}
-
+{{- if eq .Values.stage "dev" }}
+{{- if hasPrefix "www" "TPL_SERVICE" }}
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
@@ -21,7 +20,7 @@ spec:
         port:
           number: {{ .Values.service.port }}
         host: {{ include "TPL_SERVICE.fullname" . }}
-{{ else }}
+{{- else }}
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
@@ -42,5 +41,5 @@ spec:
         port:
           number: {{ .Values.service.port }}
         host: {{ include "TPL_SERVICE.fullname" . }}
-{{ end }}
-{{ end }}
+{{- end }}
+{{- end }}
