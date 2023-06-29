@@ -72,7 +72,7 @@ jobs:
 
 
       - name: Build Image
-        if: ${{ steps.image_exists.outputs.conclusion == false  }}
+        if: ${{ steps.image_exists.outcome != 'success' }}
         id: build-image
         uses: redhat-actions/buildah-build@v2
         with:
@@ -83,6 +83,7 @@ jobs:
             ./Dockerfile
 
       - name: Push ro registry
+        if: ${{ steps.image_exists.outcome != 'success' }}
         id: push-to-registry
         uses: redhat-actions/push-to-registry@v2
         with:
@@ -97,13 +98,14 @@ jobs:
         id: pull-image
         env: 
           VERSION: ${{ inputs.VERSION }}
+          OLD_TAG: ${{ format('{0}/{1}:{2}', env.DOCKER_REGISTRY, github.repository, env.SHORT_SHA ) }}
+          NEW_TAG: ${{ format('{0}/{1}:{2}', env.DOCKER_REGISTRY, github.repository, inputs.VERSION ) }}
         run: |
-          docker pull ${IMAGE}:${SHORT_SHA}
-          docker tag ${IMAGE}:${SHORT_SHA} ${IMAGE}:${VERSION}
+          docker tag ${OLD_TAG} ${NEW_TAG}
           docker push
 
       - name: Get HV Token
-        if: ${{ steps.image_exists.outputs.conclusion == false  }}
+        if: ${{ steps.image_exists.outcome != 'success' }}
         id: get-token
         env:
           TOKEN: ${{ secrets.TOKEN }}
@@ -113,7 +115,7 @@ jobs:
           echo "VAULT_TOKEN=$vault_token" >> $GITHUB_OUTPUT
         
       - name: Sign Image
-        if: ${{ steps.image_exists.outputs.conclusion == false  }}
+        if: ${{ steps.image_exists.outcome != 'success' }}
         run: |
           cosign login ${DOCKER_REGISTRY} -u ${DOCKER_USER} -p ${DOCKER_PASS}
           cosign sign --yes --key hashivault://cosign "${TAGS}"
