@@ -16,6 +16,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo '$GITHUB_CONTEXT'
+      - name: Dump job context
+        env:
+          JOB_CONTEXT: ${{ toJson(job) }}
+        run: echo '$JOB_CONTEXT'
+
       - name: Import Secrets
         id: secrets
         uses: hashicorp/vault-action@v2
@@ -29,6 +39,17 @@ jobs:
               kv/data/ci/github/workflows DOCKER_PASS | DOCKER_PASS ;
 
       - uses: actions/checkout@v3
+
+      - name: Check image
+        id: image_exists
+        uses: cloudposse/github-action-docker-image-exists@main
+        with:
+          registry: ${{ env. DOCKER_REGISTRY }}
+          organization: "${{ github.repository }}"
+          repository: "${{ github.event.repository.name }}"
+          login: "${{ env.DOCKER_USER }}"
+          password: "${{ env.DOCKER_PASS }}"
+          tag: latest
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3.1.0
