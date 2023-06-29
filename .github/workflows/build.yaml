@@ -64,7 +64,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Docker meta
-        if: ${{ steps.image_exists.outputs.conclusion }}
+        if: ${{ steps.image_exists.outputs.conclusion == false }}
         id: meta
         uses: docker/metadata-action@v4
         with:
@@ -81,7 +81,7 @@ jobs:
           password: ${{ env.DOCKER_PASS }}
 
       - name: Build and push
-        if: ${{ steps.image_exists.outputs.conclusion }}
+        if: ${{ steps.image_exists.outputs.conclusion == false  }}
         id: build-and-push
         uses: docker/build-push-action@v4
         with:
@@ -101,6 +101,7 @@ jobs:
           docker push
 
       - name: Tag and Push
+        if: ${{ steps.image_exists.outputs.conclusion == false  }}
         id: tag-and-push
         env: 
           VERSION: ${{ inputs.VERSION }}
