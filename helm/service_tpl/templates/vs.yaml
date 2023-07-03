@@ -6,8 +6,10 @@ metadata:
   labels:
     {{- include "TPL_SERVICE.labels" . | nindent 4 }}
 spec:
+  {{- with .Values.tolerations }}
   hosts:
-  {{- .Values.hosts . | nindent 4 }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   gateways:
   - {{ .Values.gateway }}
   http:
