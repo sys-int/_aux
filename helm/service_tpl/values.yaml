@@ -38,8 +38,11 @@ securityContext: {}
 
 stage: "dev"
 
-gateway: gateway
-hosts: []
+gateways: 
+  - gw1
+hosts: 
+  - h1
+  - h2
 
 service:
   type: ClusterIP

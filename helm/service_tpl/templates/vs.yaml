@@ -6,12 +6,14 @@ metadata:
   labels:
     {{- include "TPL_SERVICE.labels" . | nindent 4 }}
 spec:
-  {{- with .Values.tolerations }}
+  {{- with .Values.hosts }}
   hosts:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  gateways:
-  - {{ .Values.gateway }}
+  {{- with .Values.gateways }}
+    gateways:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   http:
   - match:
     - uri:
