@@ -38,6 +38,9 @@ securityContext: {}
 
 stage: "dev"
 
+gateway: gateway
+hosts: []
+
 service:
   type: ClusterIP
   port: 8080
