@@ -1,4 +1,4 @@
-{{- if eq .Values.stage "dev" }}
+{{- if not .Values.canary.enabled }}
 {{- if hasPrefix "www" "TPL_SERVICE" }}
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
