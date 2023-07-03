@@ -29,6 +29,7 @@ spec:
     gateways:
       {{- toYaml . | nindent 6 }}
     {{- end }}
+    {{- with .Values.hosts }}
     hosts:
       {{- toYaml . | nindent 6 }}
     {{- end }}
